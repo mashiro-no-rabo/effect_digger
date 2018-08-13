@@ -1,0 +1,2 @@
+defmodule EffectDigger do
+end
