@@ -9,3 +9,6 @@ config :effect_digger, EffectDigger.Repo,
 
 config :effect_digger,
   ecto_repos: [EffectDigger.Repo]
+
+config :logger,
+  level: :info
