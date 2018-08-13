@@ -1,5 +1,6 @@
 defmodule EffectDigger do
   alias EffectDigger.Repo
+  require EffectDigger.DogmaConst, as: DC
   import Ecto.Query, only: [from: 2]
 
   def select_effects(type_id) do
@@ -32,8 +33,7 @@ defmodule EffectDigger do
       ]
     )
     |> Repo.one()
-    |> Enum.reject(fn {k, v} -> k not in [:arg1, :arg2] and v == nil end)
-    |> Map.new()
+    |> clean_map()
   end
 
   def expand_expression(root_exp_id) do
@@ -46,6 +46,19 @@ defmodule EffectDigger do
   defp do_expand_expression(exp_id) do
     exp = select_expression(exp_id)
 
-    {exp_id, %{exp | arg1: do_expand_expression(exp.arg1), arg2: do_expand_expression(exp.arg2)}}
+    expanded_exp =
+      exp
+      |> Map.put(:arg1, do_expand_expression(exp[:arg1]))
+      |> Map.put(:arg2, do_expand_expression(exp[:arg2]))
+      |> Map.put(:operand, DC.rev_op(exp.operandID))
+      |> clean_map
+
+    {exp_id, expanded_exp}
+  end
+
+  defp clean_map(m) do
+    m
+    |> Enum.reject(fn {_, v} -> v == nil end)
+    |> Map.new()
   end
 end
