@@ -64,4 +64,36 @@ defmodule EffectDigger do
     |> Enum.reject(fn {_, v} -> v == nil end)
     |> Map.new()
   end
+
+  @doc "List effects use a particular base expression (in all the way down)"
+  def list_effect_reference(exp_id) do
+    do_list_reference([exp_id], [])
+  end
+
+  @doc "Count how many effects use a particular base expression (in all the way down)"
+  def count_effect_reference(exp_id) do
+    exp_id
+    |> list_effect_reference()
+    |> length()
+  end
+
+  def do_list_reference([], acc), do: acc
+
+  def do_list_reference([exp_id | rest], acc) do
+    exp_refs =
+      from(e in "dgmExpressions",
+        where: e.arg1 == ^exp_id or e.arg2 == ^exp_id,
+        select: e.expressionID
+      )
+      |> Repo.all()
+
+    effect_refs =
+      from(ef in "dgmEffects",
+        where: ef.preExpression == ^exp_id or ef.postExpression == ^exp_id,
+        select: ef.effectID
+      )
+      |> Repo.all()
+
+    do_list_reference(rest ++ exp_refs, acc ++ effect_refs)
+  end
 end
