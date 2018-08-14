@@ -3,6 +3,7 @@ defmodule EffectDigger do
   require EffectDigger.DogmaConst, as: DC
   import Ecto.Query, only: [from: 2]
 
+  @doc "Select effects of a type"
   def select_effects(type_id) do
     from(te in "dgmTypeEffects",
       join: e in "dgmEffects",
@@ -18,6 +19,7 @@ defmodule EffectDigger do
     |> Repo.all()
   end
 
+  @doc "Select useful columns of an expression"
   def select_expression(exp_id) do
     from(exp in "dgmExpressions",
       where: exp.expressionID == ^exp_id,
@@ -36,6 +38,7 @@ defmodule EffectDigger do
     |> clean_map()
   end
 
+  @doc "Expand an expression (arg1 and arg2) all the way"
   def expand_expression(root_exp_id) do
     {_, ret} = do_expand_expression(root_exp_id)
     ret
